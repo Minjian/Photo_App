@@ -55,13 +55,24 @@ class UserPhotos extends React.Component {
       return (<Typography variant="h5" color="inherit" gutterBottom> No Photo Found! </Typography>);
     }
     let photoCards = [];
+    function comparePhotos(photoA, photoB) {
+      let lengthA = photoA.liked_by_users.length;
+      let lengthB = photoB.liked_by_users.length;
+      if (lengthA === lengthB) {
+        return (photoA.date_time < photoB.date_time ? 1 : -1);
+      }
+      return lengthB - lengthA;
+    }
+    photos.sort(comparePhotos);
     for (let index = 0; index < photos.length; index++) {
       const photo = photos[index];
+      const isLiked = (photo.liked_by_users.indexOf(window.sessionStorage.getItem("userId")) >= 0);
       photoCards.push(
         <UserPhotoCard
           updatePage={this.updatePage}
           photo={photo}
           key={photo._id}
+          isLiked={isLiked}
         />
       );
     }

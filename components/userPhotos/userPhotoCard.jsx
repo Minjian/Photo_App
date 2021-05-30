@@ -12,11 +12,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
+  TextField,
+  IconButton,
 } from '@material-ui/core';
 import './userPhotos.css';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import ThumbUpIcon from '@material-ui/icons/ThumbUp';
+import ThumbUpOutlinedIcon from '@material-ui/icons/ThumbUpOutlined';
 
 /**
  * Define UserPhotoCard, a React component of CS142 project #7
@@ -28,7 +31,8 @@ class UserPhotoCard extends React.Component {
     super(props);
     this.state = {
       newComment: "",
-      openDialog: false
+      openDialog: false,
+      isLiked: props.isLiked
     };
   }
 
@@ -51,6 +55,22 @@ class UserPhotoCard extends React.Component {
 
   textFieldHandler(stateField) {
     this.setState(stateField);
+  }
+
+  likeHandler(photoId) {
+    console.log("Have a like for photoId: ", photoId);
+    axios
+      .post("/like/" + photoId, {
+        isLiked: !this.state.isLiked
+      })
+      .then((response) => {
+        console.log("Like: ", response);
+        this.setState({isLiked: !this.state.isLiked});
+        this.props.updatePage();
+      })
+      .catch((error) => {
+        console.log(error.response);
+      })
   }
 
   render() {
@@ -97,7 +117,33 @@ class UserPhotoCard extends React.Component {
                     >
                         Add a Comment
                     </Button>
-
+                    {this.state.isLiked ? (
+                        <IconButton
+                            color="primary"
+                            aria-label="Like"
+                            onClick={ () => this.likeHandler(photo._id) }
+                        >
+                            <ThumbUpIcon />
+                            {photo.liked_by_users.length !== 0 && (
+                                <Typography variant="h6" color="primary">
+                                    <div>&nbsp;{photo.liked_by_users.length}</div>
+                                </Typography>
+                            )}
+                        </IconButton>
+                    ) : (
+                        <IconButton
+                            color="default"
+                            aria-label="Like"
+                            onClick={ () => this.likeHandler(photo._id) }
+                        >
+                            <ThumbUpOutlinedIcon />
+                            {photo.liked_by_users.length !== 0 && (
+                                <Typography variant="h6" color="primary">
+                                    <div>&nbsp;{photo.liked_by_users.length}</div>
+                                </Typography>
+                            )}
+                        </IconButton>
+                    )}
                     <Dialog
                         fullWidth
                         open={this.state.openDialog}

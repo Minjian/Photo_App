@@ -215,7 +215,8 @@ app.get('/photosOfUser/:id', function (request, response) {
                 file_name: photo.file_name,
                 date_time: photo.date_time,
                 user_id: photo.user_id,
-                comments: photo.comments
+                comments: photo.comments,
+                liked_by_users: photo.liked_by_users
             };
 
             async.forEachOf(photo.comments, function (comm, commKey, commCallback) {
@@ -395,6 +396,40 @@ app.post('/photos/new', function (request, response) {
                 response.status(200).send(createdPhoto);
             });
         });
+    });
+});
+
+/*
+ * URL /like - Photo Like Votes
+ */
+app.post('/like/:photo_id', function (request, response) {
+    if (!request.session.user_id) {
+        response.status(401).send("User is not logged in.");
+        return;
+    }
+
+    let photoId = request.params.photo_id;
+    let curUserId = request.session.user_id;
+    Photo.findOne({_id: photoId}, function (err, photo) {
+        if (err) {
+            console.log('Photo with _id:' + photoId + ' not found.');
+            response.status(400).send('Not found');
+            return;
+        }
+        let userIndex = photo.liked_by_users.indexOf(curUserId);
+        if (request.body.isLiked) {
+            if (userIndex < 0) {
+                // Add userId to the like list
+                photo.liked_by_users.push(curUserId);
+            }
+        } else {
+            if (userIndex >= 0) {
+                // Remove userId from the like list
+                photo.liked_by_users.splice(userIndex, 1);
+            }
+        }
+        photo.save();
+        response.status(200).send();
     });
 });
 
