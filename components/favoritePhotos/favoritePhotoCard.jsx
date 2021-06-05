@@ -5,9 +5,7 @@ import {
   CardMedia,
   Dialog,
   DialogTitle,
-  DialogContent,
   IconButton,
-  Divider,
 } from '@material-ui/core';
 import './favoritePhotos.css';
 import axios from 'axios';
