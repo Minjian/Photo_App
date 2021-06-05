@@ -216,7 +216,8 @@ app.get('/photosOfUser/:id', function (request, response) {
                 date_time: photo.date_time,
                 user_id: photo.user_id,
                 comments: photo.comments,
-                liked_by_users: photo.liked_by_users
+                liked_by_users: photo.liked_by_users,
+                favored_by_users: photo.favored_by_users
             };
 
             async.forEachOf(photo.comments, function (comm, commKey, commCallback) {
@@ -430,6 +431,103 @@ app.post('/like/:photo_id', function (request, response) {
         }
         photo.save();
         response.status(200).send();
+    });
+});
+
+/*
+ * URL /favorite - Photo Favorite
+ */
+app.post('/favorite/:photo_id', function (request, response) {
+    if (!request.session.user_id) {
+        response.status(401).send("User is not logged in.");
+        return;
+    }
+
+    let photoId = request.params.photo_id;
+    let curUserId = request.session.user_id;
+    Photo.findOne({_id: photoId}, function (err, photo) {
+        if (err) {
+            console.log('Photo with _id:' + photoId + ' not found.');
+            response.status(400).send('Not found');
+            return;
+        }
+        let userIndex = photo.favored_by_users.indexOf(curUserId);
+        if (request.body.isFavorite) {
+            if (userIndex < 0) {
+                // Add userId to the favorite list
+                photo.favored_by_users.push(curUserId);
+            }
+        } else {
+            if (userIndex >= 0) {
+                // Remove userId from the favorite list
+                photo.favored_by_users.splice(userIndex, 1);
+            }
+        }
+        photo.save();
+        response.status(200).send();
+    });
+
+    User.findOne({_id: curUserId}, function (err, user) {
+        if (err) {
+            console.log('user with _id:' + curUserId + ' not found.');
+            response.status(400).send('Not found');
+            return;
+        }
+        let photoIndex = user.favorite_photos.indexOf(photoId);
+        if (request.body.isFavorite) {
+            if (photoIndex < 0) {
+                // Add photoId to the favorite list
+                user.favorite_photos.push(photoId);
+            }
+        } else {
+            if (photoIndex >= 0) {
+                // Remove photoId from the favorite list
+                user.favorite_photos.splice(photoIndex, 1);
+            }
+        }
+        user.save();
+        response.status(200).send();
+    });
+});
+
+/*
+ * URL /favorites - Return photos favored by login user.
+ */
+app.get('/favorites', function (request, response) {
+    if (!request.session.user_id) {
+        response.status(401).send("User is not logged in.");
+        return;
+    }
+    var id = request.session.user_id;
+    User.findOne({_id: id}, function (err, user) {
+        if (err) {
+            console.log('User with _id:' + id + ' not found.');
+            response.status(400).send('Not found');
+            return;
+        }
+        let favoritePhotoIds = user.favorite_photos;
+        let favoritePhotos = [];
+        async.each(favoritePhotoIds, function (photoId, photoCallback) {
+            Photo.findOne({_id: photoId}, function (err, photo) {
+                if (err) {
+                    console.log('Photo with _id:' + photoId + ' not found.');
+                    response.status(400).send('Not found');
+                    return;
+                }
+                favoritePhotos.push({
+                    _id: photo._id,
+                    file_name: photo.file_name,
+                    date_time: photo.date_time,
+                });
+                photoCallback();
+            });
+        }, function (err) {
+            if (err) {
+                console.error(err.message);
+                return;
+            }
+            response.status(200).send(favoritePhotos);
+        });
     });
 });
 

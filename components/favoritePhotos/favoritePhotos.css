@@ -1,0 +1,9 @@
+.cs142-favorite-header {
+  height: 10px;
+}
+
+.cs142-favorite-thumbnail {
+  margin: 10px;
+  max-width: 250px;
+  max-height: 250px;
+}

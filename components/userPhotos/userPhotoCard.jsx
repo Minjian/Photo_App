@@ -20,6 +20,8 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ThumbUpIcon from '@material-ui/icons/ThumbUp';
 import ThumbUpOutlinedIcon from '@material-ui/icons/ThumbUpOutlined';
+import FavoriteIcon from '@material-ui/icons/Favorite';
+import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 
 /**
  * Define UserPhotoCard, a React component of CS142 project #7
@@ -32,7 +34,8 @@ class UserPhotoCard extends React.Component {
     this.state = {
       newComment: "",
       openDialog: false,
-      isLiked: props.isLiked
+      isLiked: props.isLiked,
+      isFavorite: props.isFavorite
     };
   }
 
@@ -66,6 +69,22 @@ class UserPhotoCard extends React.Component {
       .then((response) => {
         console.log("Like: ", response);
         this.setState({isLiked: !this.state.isLiked});
+        this.props.updatePage();
+      })
+      .catch((error) => {
+        console.log(error.response);
+      })
+  }
+
+  favoriteHandler(photoId) {
+    console.log("Favorite for photoId: ", photoId);
+    axios
+      .post("/favorite/" + photoId, {
+        isFavorite: true
+      })
+      .then((response) => {
+        console.log("Favorite: ", response);
+        this.setState({isFavorite: true});
         this.props.updatePage();
       })
       .catch((error) => {
@@ -117,6 +136,22 @@ class UserPhotoCard extends React.Component {
                     >
                         Add a Comment
                     </Button>
+                    {this.state.isFavorite ? (
+                        <IconButton
+                            aria-label="Favorite"
+                            disabled
+                        >
+                            <FavoriteIcon color="secondary"/>
+                        </IconButton>
+                    ) : (
+                        <IconButton
+                            color="default"
+                            aria-label="Favorite"
+                            onClick={ () => this.favoriteHandler(photo._id) }
+                        >
+                            <FavoriteBorderIcon />
+                        </IconButton>
+                    )}
                     {this.state.isLiked ? (
                         <IconButton
                             color="primary"

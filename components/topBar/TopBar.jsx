@@ -14,6 +14,7 @@ import './TopBar.css';
 import axios from 'axios';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import AddPhotoAlternateIcon from '@material-ui/icons/AddPhotoAlternate';
+import FavoriteIcon from '@material-ui/icons/Favorite';
 
 /**
  * Define TopBar, a React component of CS142 project #5
@@ -70,51 +71,62 @@ class TopBar extends React.Component {
               <Typography variant="h5" color="inherit">
               Hi {this.props.loginUser.first_name}
               </Typography>
-              <Typography variant="h6" color="inherit">
+              {/* <Typography variant="h6" color="inherit">
                   Version: {this.state.versionInfo.version}
-              </Typography>
+              </Typography> */}
               <Typography variant="h5" color="inherit">
                   {this.state.topBarText}
               </Typography>
               <div>
                 <span className="cs142-topbar-button">
                   <Button
-                      variant="contained"
-                      size="small"
-                      startIcon={<AddPhotoAlternateIcon />}
-                      onClick={ () => {this.setState({openDialog: true});} }
-                    >
-                        Add Photo
-                    </Button>
+                    variant="contained"
+                    color="secondary"
+                    size="small"
+                    startIcon={<FavoriteIcon />}
+                    href={"/photo-share.html#/favorites/"}
+                  >
+                      Favorite Photos
+                  </Button>
+                </span>
+                <span className="cs142-topbar-button">
+                  <Button
+                    variant="contained"
+                    size="small"
+                    startIcon={<AddPhotoAlternateIcon />}
+                    onClick={ () => {this.setState({openDialog: true});} }
+                  >
+                    Add Photo
+                  </Button>
 
-                    <Dialog
-                      fullWidth
-                      open={this.state.openDialog}
-                      onClose={ () => {this.setState({openDialog: false});} }
-                      aria-labelledby="form-dialog-title"
-                    >
-                      <DialogTitle id="form-dialog-title">Upload a new photo</DialogTitle>
-                      <form onSubmit={this.uploadButtonClickedHandler}>
-                        <DialogContent>
-                          <input type="file" accept="image/*" ref={(domFileRef) => { this.uploadInput = domFileRef; }} />
-                        </DialogContent>
-                        <DialogActions>
-                          <Button
-                            onClick={ () => {this.setState({openDialog: false});} }
-                            color="primary"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            type="submit"
-                            onClick={ () => {this.setState({openDialog: false});} }
-                            color="primary"
-                          >
-                            Upload
-                          </Button>
-                        </DialogActions>
-                      </form>
-                    </Dialog>
+                  <Dialog
+                    fullWidth
+                    open={this.state.openDialog}
+                    onClose={ () => {this.setState({openDialog: false});} }
+                    aria-labelledby="form-dialog-title"
+                  >
+                    <DialogTitle id="form-dialog-title">Upload a new photo</DialogTitle>
+                    <form onSubmit={this.uploadButtonClickedHandler}>
+                      <DialogContent>
+                        <input type="file" accept="image/*" ref={(domFileRef) => { this.uploadInput = domFileRef; }} />
+                      </DialogContent>
+                      <DialogActions>
+                        <Button
+                          onClick={ () => {this.setState({openDialog: false});} }
+                          color="primary"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          onClick={ () => {this.setState({openDialog: false});} }
+                          color="primary"
+                        >
+                          Upload
+                        </Button>
+                      </DialogActions>
+                    </form>
+                  </Dialog>
                 </span>
                 <span className="cs142-topbar-button">
                   <Button

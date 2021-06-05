@@ -20,6 +20,7 @@ import UserDetail from './components/userDetail/UserDetail';
 import UserList from './components/userList/UserList';
 import UserPhotos from './components/userPhotos/UserPhotos';
 import LoginRegister from "./components/LoginRegister/LoginRegister";
+import FavoritePhotos from "./components/favoritePhotos/FavoritePhotos";
 
 class PhotoShare extends React.Component {
   constructor(props) {
@@ -116,6 +117,13 @@ class PhotoShare extends React.Component {
                 <Route path="/users" component={UserList}  />
               ) : (
                 <Redirect path="/users" to="/login-register" />
+              )}
+              {this.userIsLoggedIn() ? (
+                <Route path="/favorites"
+                  render={ props => <FavoritePhotos {...props} switchPage={this.switchPage}/> }
+                />
+              ) : (
+                <Redirect path="/favorites" to="/login-register" />
               )}
             </Switch>
           </Paper>

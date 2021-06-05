@@ -5,35 +5,34 @@ import {
   Divider,
   Grid,
 } from '@material-ui/core';
-import './userPhotos.css';
+import './favoritePhotos.css';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import UserPhotoCard from "./UserPhotoCard";
+import FavoritePhotoCard from "./favoritePhotoCard";
 
 /**
- * Define UserPhotos, a React component of CS142 project #5
+ * Define FavoritePhotos, a React component of CS142 project #8
  */
-class UserPhotos extends React.Component {
+class FavoritePhotos extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      curUser: "",
-      photos: "",
+      loginUser: "",
+      favoritePhotos: []
     };
-    let userId = props.match.params.userId;
-    axios.get("/photosOfUser/" + userId)
+    axios.get("/user/" + window.sessionStorage.getItem("userId"))
       .then((response) => {
-        this.setState({ photos: response.data });
+        let user = response.data;
+        this.setState({ loginUser: user });
       })
       .catch((error) => {
         console.log(error.response);
       })
-    axios.get("/user/" + userId)
+    axios.get("/favorites")
       .then((response) => {
-        let user = response.data;
-        this.setState({ curUser: user });
-        this.props.switchPage("Photos of " + user.first_name + " " + user.last_name);
+        this.setState({ favoritePhotos: response.data });
+        this.props.switchPage("Your Favorite Photos");
       })
       .catch((error) => {
         console.log(error.response);
@@ -41,40 +40,32 @@ class UserPhotos extends React.Component {
   }
 
   updatePage = () => {
-    axios.get("/photosOfUser/" + this.state.curUser._id)
+    axios.get("/favorites")
       .then((response) => {
-        this.setState({ photos: response.data });
+        this.setState({ favoritePhotos: response.data });
+        this.props.switchPage("Your Favorite Photos");
       })
       .catch((error) => {
         console.log(error.response);
       })
   }
 
-  getPhotos(user, photos) {
+  getPhotos(photos) {
     if (photos.length === 0) {
-      return (<Typography variant="h5" color="inherit" gutterBottom> No Photo Found! </Typography>);
+      return (<Typography variant="h6" color="inherit" gutterBottom> No Favorite Photo Found! </Typography>);
     }
     let photoCards = [];
     function comparePhotos(photoA, photoB) {
-      let lengthA = photoA.liked_by_users.length;
-      let lengthB = photoB.liked_by_users.length;
-      if (lengthA === lengthB) {
-        return (photoA.date_time < photoB.date_time ? 1 : -1);
-      }
-      return lengthB - lengthA;
+      return (photoA.date_time < photoB.date_time ? 1 : -1);
     }
     photos.sort(comparePhotos);
     for (let index = 0; index < photos.length; index++) {
       const photo = photos[index];
-      const isLiked = (photo.liked_by_users.indexOf(window.sessionStorage.getItem("userId")) >= 0);
-      const isFavorite = (photo.favored_by_users.indexOf(window.sessionStorage.getItem("userId")) >= 0);
       photoCards.push(
-        <UserPhotoCard
+        <FavoritePhotoCard
           updatePage={this.updatePage}
           photo={photo}
           key={photo._id}
-          isLiked={isLiked}
-          isFavorite={isFavorite}
         />
       );
     }
@@ -82,7 +73,6 @@ class UserPhotos extends React.Component {
   }
 
   render() {
-    let user = this.state.curUser;
     return (
       <div>
           <Button
@@ -91,18 +81,18 @@ class UserPhotos extends React.Component {
             size="large"
             startIcon={<ExitToAppIcon />}
             component={Link}
-            to={"/users/" + user._id}
+            to={"/users/" + this.state.loginUser._id}
           > 
             Back to Profile
           </Button>
         <Divider />
         <Divider />
         <Grid container alignItems="stretch">
-          {this.getPhotos(user, this.state.photos)}
+          {this.getPhotos(this.state.favoritePhotos)}
         </Grid>
       </div>
     );
   }
 }
 
-export default UserPhotos;
+export default FavoritePhotos;
