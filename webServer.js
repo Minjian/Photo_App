@@ -167,6 +167,36 @@ app.get('/user/list', function (request, response) {
 });
 
 /*
+ * URL /user/mention - Return all the User object for mention.
+ */
+app.get('/user/mention', function (request, response) {
+    if (!request.session.user_id) {
+        response.status(401).send("User is not logged in.");
+        return;
+    }
+    User.find({}, function (err, users) {
+        if (err) {
+            console.error(err.message);
+            return;
+        }
+        let userList = users;
+        async.forEachOf(userList, function (user, key, callback) {
+            userList[key] = {
+                id: user._id,
+                display: user.first_name + " " + user.last_name,
+            };
+            callback();
+        }, function (err) {
+            if (err) {
+                console.error(err.message);
+                return;
+            }
+            response.status(200).send(userList);
+        });
+    });
+});
+
+/*
  * URL /user/:id - Return the information for User (id)
  */
 app.get('/user/:id', function (request, response) {
@@ -216,6 +246,7 @@ app.get('/photosOfUser/:id', function (request, response) {
                 date_time: photo.date_time,
                 user_id: photo.user_id,
                 comments: photo.comments,
+                tags: photo.tags,
                 liked_by_users: photo.liked_by_users,
                 favored_by_users: photo.favored_by_users
             };
@@ -344,6 +375,50 @@ app.post('/commentsOfPhoto/:photo_id', function (request, response) {
             user_id: request.session.user_id
         }
         photo.comments.push(newComment);
+        photo.save();
+        response.status(200).send();
+    });
+});
+
+/*
+ * URL /tagsOfPhoto/:photo_id - New tag
+ */
+app.post('/tagsOfPhoto/:photo_id', function (request, response) {
+    if (!request.session.user_id) {
+        response.status(401).send("User is not logged in.");
+        return;
+    }
+    let photoId = request.params.photo_id;
+    let tag = request.body;
+    Photo.findOne({_id: photoId}, function (err, photo) {
+        if (err) {
+            console.log('Photo with _id:' + photoId + ' not found.');
+            response.status(400).send('Not found');
+            return;
+        }
+        photo.tags.push(tag);
+        photo.save();
+        response.status(200).send();
+    });
+});
+
+/*
+ * URL /removeTag/:photo_id - Remove tag
+ */
+app.post('/removeTag/:photo_id', function (request, response) {
+    if (!request.session.user_id) {
+        response.status(401).send("User is not logged in.");
+        return;
+    }
+    let photoId = request.params.photo_id;
+    let index = request.body.index;
+    Photo.findOne({_id: photoId}, function (err, photo) {
+        if (err) {
+            console.log('Photo with _id:' + photoId + ' not found.');
+            response.status(400).send('Not found');
+            return;
+        }
+        photo.tags.splice(index, 1);
         photo.save();
         response.status(200).send();
     });

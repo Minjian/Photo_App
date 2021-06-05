@@ -14,6 +14,7 @@ import {
   DialogActions,
   TextField,
   IconButton,
+  Tooltip,
 } from '@material-ui/core';
 import './userPhotos.css';
 import { Link } from 'react-router-dom';
@@ -22,6 +23,10 @@ import ThumbUpIcon from '@material-ui/icons/ThumbUp';
 import ThumbUpOutlinedIcon from '@material-ui/icons/ThumbUpOutlined';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import ReactCrop from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+import { MentionsInput, Mention } from 'react-mentions';
+import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 
 /**
  * Define UserPhotoCard, a React component of CS142 project #7
@@ -34,9 +39,24 @@ class UserPhotoCard extends React.Component {
     this.state = {
       newComment: "",
       openDialog: false,
+      openTagInput: false,
       isLiked: props.isLiked,
-      isFavorite: props.isFavorite
+      isFavorite: props.isFavorite,
+      allUsers: "",
+      tagMentionsInput: "",
+      crop: {
+        unit: "%",
+        width: "",
+        height: "",
+      },
     };
+    axios.get("/user/mention")
+      .then((response) => {
+        this.setState({allUsers: response.data});
+      })
+      .catch((error) => {
+        console.log(error.response);
+      })
   }
 
   commentHandler(event, photoId) {
@@ -62,8 +82,7 @@ class UserPhotoCard extends React.Component {
 
   likeHandler(photoId) {
     console.log("Have a like for photoId: ", photoId);
-    axios
-      .post("/like/" + photoId, {
+    axios.post("/like/" + photoId, {
         isLiked: !this.state.isLiked
       })
       .then((response) => {
@@ -78,13 +97,60 @@ class UserPhotoCard extends React.Component {
 
   favoriteHandler(photoId) {
     console.log("Favorite for photoId: ", photoId);
-    axios
-      .post("/favorite/" + photoId, {
+    axios.post("/favorite/" + photoId, {
         isFavorite: true
       })
       .then((response) => {
         console.log("Favorite: ", response);
         this.setState({isFavorite: true});
+        this.props.updatePage();
+      })
+      .catch((error) => {
+        console.log(error.response);
+      })
+  }
+
+  dragHandler(crop) {
+    // console.log("Crop Width = " + this.state.crop.width);
+    // console.log("Crop Height = " + this.state.crop.height);
+    // console.log("Crop X = " + this.state.crop.x);
+    // console.log("Crop Y = " + this.state.crop.y);
+    this.setState({crop: crop});
+  }
+
+  addTagHandler(id, name, photoId) {
+    console.log("ID: " + id);
+    console.log("Name: " + name);
+    axios.post("/tagsOfPhoto/" + photoId, {
+        x: this.state.crop.x, // X position of the photo
+        y: this.state.crop.y, // Y position of the photo
+        width: this.state.crop.width, // Width of the tag
+        height: this.state.crop.height, // Height of the tag
+        tagged_user_name: name, // Full name of tagged user
+        tagged_user_id: id, // Tagged user ID
+        added_by_user_id: window.sessionStorage.getItem("userId")
+      })
+      .then((response) => {
+        console.log("Add tag: ", response);
+        this.setState({
+            openTagInput: false,
+            crop: {unit: "%", width: "", height: "",}
+        });
+        this.props.updatePage();
+      })
+      .catch((error) => {
+        console.log(error.response);
+      })
+  }
+
+  removeTagHandler(photoId, index) {
+    console.log("photoId: " + photoId);
+    console.log("index: " + index);
+    axios.post("/removeTag/" + photoId, {
+        index: index
+      })
+      .then((response) => {
+        console.log("Remove tag: ", response);
         this.props.updatePage();
       })
       .catch((error) => {
@@ -101,10 +167,84 @@ class UserPhotoCard extends React.Component {
                     title={photo.file_name}
                     subheader={photo.date_time}
                 />
-                <CardMedia
-                    component="img"
-                    image={"/images/" + photo.file_name}
-                />
+                <CardMedia>
+                <ReactCrop
+                    src={"/images/" + photo.file_name}
+                    onChange={ (crop) => this.dragHandler(crop) }
+                    onDragStart={ () => {this.setState({openTagInput: false});} }
+                    onDragEnd={ () => {this.setState({openTagInput: true});} }
+                    crop={this.state.crop}
+                >
+                    {photo.tags && photo.tags.length !== 0 && (
+                        photo.tags.map(
+                            (tag, index) => (
+                                <div key={index}>
+                                    <Tooltip
+                                        interactive
+                                        title={
+                                            <Link
+                                                to={"/users/" + tag.tagged_user_id}
+                                                style={{color: "white"}}
+                                            >
+                                                {tag.tagged_user_name}
+                                            </Link>
+                                        }
+                                    >
+                                        <div
+                                            style={{
+                                                left: tag.x,
+                                                top: tag.y,
+                                                width: tag.width,
+                                                height: tag.height,
+                                                position: "absolute",
+                                                border: "2px dashed white"}}
+                                        >
+                                        </div>
+                                    </Tooltip>
+                                    {tag.added_by_user_id === window.sessionStorage.getItem("userId") && (
+                                        <div
+                                            style={{
+                                                left: tag.x + tag.width - 35,
+                                                top: tag.y - 5,
+                                                position: "absolute"}}
+                                        >
+                                            <IconButton color="secondary" onClick={ () => this.removeTagHandler(photo._id, index) }>
+                                                <HighlightOffIcon />
+                                            </IconButton>
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        )
+                    )}
+                    {this.state.openTagInput && this.state.crop.width > 10 && this.state.crop.height > 10 && (
+                        <div style={{
+                            left: this.state.crop.x,
+                            top: this.state.crop.y + this.state.crop.height,
+                            width: this.state.crop.width,
+                            position: "absolute"}}
+                        >
+                            <MentionsInput
+                                value={this.state.tagMentionsInput}
+                                onChange={ (event) => {this.setState({tagMentionsInput: event.target.value});} }
+                                singleLine
+                                style={{backgroundColor: 'white'}}
+                            >
+                                <Mention
+                                    trigger=""
+                                    data={this.state.allUsers}
+                                    onAdd={
+                                        (id, name) => {
+                                            this.addTagHandler(id, name, photo._id);
+                                            this.setState({tagMentionsInput: ""});
+                                        }
+                                    }
+                                />
+                            </MentionsInput>
+                        </div>
+                    )}
+                </ReactCrop>
+                </CardMedia>
                 <CardContent>
                     {photo.comments && photo.comments.map((comment) => {
                     return (

@@ -21,7 +21,7 @@ var userListProperties = ['first_name', 'last_name', '_id'];
 var userDetailProperties = ['first_name', 'last_name', '_id',
     'location', 'description', 'occupation'];
 // Valid properties of the photo model
-var photoProperties = ['file_name', 'date_time', 'user_id', '_id', 'liked_by_users', 'favored_by_users'];
+var photoProperties = ['file_name', 'date_time', 'user_id', '_id', 'tags', 'liked_by_users', 'favored_by_users'];
 // Valid comments properties
 var commentProperties = ['comment', 'date_time', '_id', 'user'];
 
