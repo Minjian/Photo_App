@@ -44,6 +44,9 @@ class UserDetail extends React.Component {
 
           photos.sort(this.compareCommentPhotos);
           this.setState({ commentPhotoName: photos[0].file_name });
+        } else {
+          this.setState({ recentPhotoName: "" });
+          this.setState({ commentPhotoName: "" });
         }
       })
       .catch((error) => {
@@ -73,6 +76,9 @@ class UserDetail extends React.Component {
 
           photos.sort(this.compareCommentPhotos);
           this.setState({ commentPhotoName: photos[0].file_name });
+        } else {
+          this.setState({ recentPhotoName: "" });
+          this.setState({ commentPhotoName: "" });
         }
       })
       .catch((error) => {

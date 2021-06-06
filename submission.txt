@@ -5,18 +5,50 @@ Please fill in this form and submit it with your project #8.
 Enter no more than 5 user stories that you did for the assignment that you would like to be
 graded on. For each story include the following information:
 
-Story number and name:
-Story points:
+Story number and name: 1 - Extend user profile detail with usage
+Story points: 3
 Brief description to see the story in action:
+Extend the user profile page to show photo uploaded most recently and photo with the most comments
+as a thumbnail image. Clicking the thumbnail image would open user's photo page.
 
-Total Story Points:
+Story number and name: 6 - Photo like votes
+Story points: 4
+Brief description to see the story in action:
+Implement a like button for each photo. User can click the like button to like or unlike a photo.
+Photos would be sorted based on the like count (most liked at the top). If the like count is the same,
+photos would be sorted based on their timestamp (most recent first).
 
-Marketing Video URL (ensure permissions are set to public viewing):
+Story number and name: 7 - Favorite lists of photos for users
+Story points: 6
+Brief description to see the story in action:
+Implement a favorite button for each photo. User can click the favorite button to favor a photo and
+the button would be disabled if the photo is favored by the user. Each user now has a new page to view
+all favorite photo by clicking the "Favorite Photos" button at the top bar. User is able to view a bigger
+version of photo by clicking the thumbnail image and remove favorite photo by clicking the "X" button
+in the favorite photo page.
 
-Is it OK with you if we post your Marketing Video URL on the class discussion forum?
+Story number and name: 9 - Tagging photos
+Story points: 10
+Brief description to see the story in action:
+Users are now able to tag their friends in any photo and allow to have multiple tags. After users select
+a certain area, they can select who they want to tag. Other users would be able to see the tags. The user
+who created the tag is able to see a red "X" button to remove the tag. All users move their mouse hovering
+the tag, then they would able to see the tagged user name. Clicking the tagged user name would jump to its
+corresponding user profile page.
 
-Any special instructions for Grading (should be easy to run app from new machine):
+Total Story Points: 23
 
+Marketing Video URL (ensure permissions are set to public viewing): https://youtu.be/3rTOZ_bkoi0
+(Sorry, in my marketing video, I forgot to mention users can click the thumbnail image to view a bigger version of their favorite photos.)
+
+Is it OK with you if we post your Marketing Video URL on the class discussion forum? Yes
+
+Any special instructions for Grading (should be easy to run app from new machine): None
+How to run the app:
+Step1: npm install
+Step2: npm run build
+Step3: node webServer.js
+Step4: Open a browser and enter "http://localhost:3000/photo-share.html#/"
 
 ************************************ Example *******************
 * As an example for if you did only story 5 your file would look like:
